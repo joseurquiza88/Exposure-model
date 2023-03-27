@@ -1,5 +1,5 @@
 
-# ------- Funcion transformacion de puntos a lineas 
+# ------- Function of transformation of points to lines 
 points_to_line <- function(data, long, lat, id_field = NULL, sort_field = NULL) {
   # Convert to SpatialPointsDataFrame
   coordinates(data) <- c(long, lat)
@@ -42,17 +42,16 @@ points_to_line <- function(data, long, lat, id_field = NULL, sort_field = NULL) 
   }
 }
 
-# ------- Funcion transformacion de minutos a horas 
-funcion_horas <- function(minutos){
-  minutos <- round(minutos)
-  hs_tot <- (minutos/60)
-  entero <- floor(hs_tot)
-  decimal <- hs_tot-entero
+# ------- Function of transformation of minutes to hours
+function_hours <- function(minutes){
+  minutes <- round(minutes)
+  hs_tot <- (minutes/60)
+  integer <- floor(hs_tot)
   mins <- round((decimal*60/1),1)
   if (entero<=9){
-    entero_2 <- paste("0",entero,sep = "")
+    integer_2 <- paste("0",integer,sep = "")
   }else{
-    entero_2<- entero
+    integer_2<- integer
   }
   
   if (mins<=9){
@@ -60,8 +59,8 @@ funcion_horas <- function(minutos){
   }else{
     mins_2<- mins
   }
-  salida <- (paste (entero_2,mins_2,sep=":"))
+  output <- (paste (integer_2,mins_2,sep=":"))
   
-  return (salida)
+  return (output)
 }
 

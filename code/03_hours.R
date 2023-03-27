@@ -1,96 +1,81 @@
-#######################################################################
-# ------------             BUSQUEDA DE LA GRILLA HORARIA     ------------- 
 
 #######################################################################
-# ------------             BUSQUEDA DE LA GRILLA HORARIA     ------------- 
+# ------------             SEARCH THE TIME GRID     ------------- 
 
-#Esta funcion permite que al ingresarle 2 fechas distintas
-# una de inicio y otra final obtenemos la grilla de interes 
-# En el caso que las horas de las fechas sean distintas por ejemplo:
-# hora_inicio <- "2023-01-19 06:50:00 -03"i
-# hora_fin <- "2023-01-19 09:50:00 -03"
-# La funcion busca las grillas disponibles para ese periodo (06,07,08,09)
-# Y se genera una media pixel a pixel.
+#This function allows you to enter 2 different dates
+# one at the beginning and the other at the end we obtain the grid of interest
+# In the event that the times of the dates are different, for example:
+# start_time <- "2023-01-19 06:50:00 -03" -  end_time <- "2023-01-19 09:50:00 -03"
+# The function searches the grids available for that period (06,07,08,09)
+# and a pixel-by-pixel average is generated.
 
-#La salida es un data.frame listo para guardar temporalmente en .shp
+#The output is a data.frame ready to temporarily save to .shp
 
-busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato_hora){
-  #  --- Funcion que busca la grilla (.shp) correspondiente a la hora de interes ingresada
-  # La grilla esta ubicada en una carpeta detaeminada
-  grillas_horaria <- function(hora, formato_hora = formato_hora,directorio_grillas=directorio_grillas){
-    hora_ingresada <- as.POSIXct(strptime(hora, format = formato_hora))
-    hora_exposicion<- hour(hora_ingresada)
-    dia_exposicion <- date(hora_ingresada)
-    setwd(directorio_grillas)
-    lista_archivos <- dir(directorio_grillas,pattern = ".shp")
+temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grid,time_format){  
+  # --- Function that looks for the grid (.shp) corresponding to the hour of interest entered
+  hourly_grid <- function(hour, time_format = time_format,dir_grids=dir_grids){
+    input_hour <- as.POSIXct(strptime(hour, format = time_format))
+    hour_exposure<- hour(input_hour)
+    exposure_day <- date(input_hour)
+    setwd(dir_grids)
+  file_list <- dir(dir_grids,pattern = ".shp")
    
-    tabla_archivos <-as.POSIXct(strptime( substr(lista_archivos,1,15), format = "%Y-%m-%d_%H%M"))
-    fecha_buscada <- which((date(tabla_archivos)) == dia_exposicion)
+    table_files <-as.POSIXct(strptime( substr(file_list,1,15), format = "%Y-%m-%d_%H%M"))
+    searched_date <- which((date(table_files)) == exposure_day)
     
-    tabla_archivos <- tabla_archivos[fecha_buscada] 
-    hora_buscada <- which((hour(tabla_archivos))== hora_exposicion)
+    table_files <- table_files[searched_date] 
+    searched_hour <- which((hour(table_files))== hour_exposure)
     
-    archivo <- tabla_archivos[hora_buscada] 
-    name_archivo<- paste(substr(archivo,1,10),"_",substr(archivo,12,13),substr(archivo,15,16),".shp",sep = "")
+    file <- table_files[searched_hour] 
+    name_file<- paste(substr(file,1,10),"_",substr(file,12,13),substr(file,15,16),".shp",sep = "")
 
-    return(name_archivo)
+    return(name_file)
   }
-  grilla_trayecto_rbind <- data.frame()
-  solo_hora_inicio <- hour(as.POSIXct(strptime(hora_inicio, format = formato_hora)))
-  solo_hora_fin <- hour(as.POSIXct(strptime(hora_fin, format = formato_hora)))
+  trajectory_grid_rbind <- data.frame()
+  only_start_hour <- hour(as.POSIXct(strptime(start_hour, format = time_format)))
+  only_end_hour <- hour(as.POSIXct(strptime(end_hour, format = time_format)))
   
-  #  --- Hay veces que no ingresamos una hora-fin por ejemplo ?¡
-  if (is.null(hora_fin)){
+  #  --- 
+  if (is.null(end_hour)){
 
-    df_grilla_inicio <- st_read(grillas_horaria(hora_inicio, formato_hora = formato_hora,directorio_grillas),quiet = TRUE)
+    df_start_grid <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
   }
   #  --- Cuando es una sola grilla
-  else if (solo_hora_inicio == solo_hora_fin ){
+  else if (only_start_hour == only_end_hour ){
 
-    grilla_trayecto <- st_read(grillas_horaria(hora_inicio, formato_hora = formato_hora,directorio_grillas),quiet = TRUE)
+    trajectory_grid <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
   }else{
-    #  --- Cuando son varias grillas hacemos una media por pixel
-    for(j in solo_hora_inicio:solo_hora_fin){
+    # --- When there are several grids we do an average per pixel
+    for(j in only_start_hour:only_end_hour){
 
-      
       if (j < 10){
-        j_hora <- paste("0",j,sep = "")
+        j_hour <- paste("0",j,sep = "")
       }else{
-        j_hora <- j
+        j_hour <- j
       }
       
-      dia <- paste(substr(hora_inicio,1,10),paste(j_hora,":00:00",sep = ""), "-03",sep = " ")
+      day <- paste(substr(start_hour,1,10),paste(j_hour,":00:00",sep = ""), "-03",sep = " ")
 
-      grilla_trayecto <- st_read(grillas_horaria(dia, formato_hora = "%Y-%m-%d %H:%M:%S",directorio_grillas),quiet = TRUE)
-      grilla_trayecto$hora <- dia
-      grilla_trayecto_rbind <- rbind(grilla_trayecto_rbind,grilla_trayecto)
+      trajectory_grid <- st_read(hourly_grid(day, time_format = "%Y-%m-%d %H:%M:%S",dir_grids),quiet = TRUE)
+      trajectory_grid$hour <- day
+      trajectory_grid_rbind <- rbind(trajectory_grid_rbind,trajectory_grid)
     }
-    ## ------------ Agrupamos por el ID de la grilla y hacemos la media de cada pixel
-    grilla_trayecto_rbind %>%
+    ## ------------ Group by the ID of the grid and make the mean of each pixel
+    trajectory_grid_rbind %>%
       group_by(GRI1_ID) %>%  
       group_split() -> data_grilla
     
     df_grilla <- data.frame()
-    # Ver si podemos tener las mismas variables que tenia enrique
-    # En su grilla, por ahora las silenciamos
     for (p in 1:length(data_grilla)){
 
       GRI1_ID <- data_grilla[[p]][["GRI1_ID"]][1]
-      #POBLXGRI <- mean(data_grilla[[p]][["POBLXGRI"]],na.rm = T)
-      #DISTANCIA <- mean(data_grilla[[p]][["DISTANCIA"]],na.rm = T)
-      #EMI_PST <- mean(data_grilla[[p]][["EMI_PST"]],na.rm = T)
-      #EMI_NOX <- mean(data_grilla[[p]][["EMI_NOX"]],na.rm = T)
       X_COORD <- data_grilla[[p]][["x"]][1]
       Y_COORD <- data_grilla[[p]][["y"]][1]
-      #ALTURA_M_ <- mean(data_grilla[[p]][["ALTURA_M_"]],na.rm = T)
-      #PMBICIS <- mean(data_grilla[[p]][["PMBICIS"]],na.rm = T)
-      #PMDIARIO<- mean(data_grilla[[p]][["PMDIARIO"]],na.rm = T)
-      PMDIARIO<- mean(data_grilla[[p]][["value"]],na.rm = T)
-      #PMHORARIO <- mean(data_grilla[[p]][["PMHORARIO"]],na.rm = T)
+      dailyPM<- mean(data_grilla[[p]][["value"]],na.rm = T)
       geometry <- data_grilla[[p]][["geometry"]][1]
       len <- length(data_grilla[[p]][["geometry"]])
       
-      df <- data.frame(GRI1_ID,X_COORD,Y_COORD,PMDIARIO,geometry,len)
+      df <- data.frame(GRI1_ID,X_COORD,Y_COORD,dailyPM,geometry,len)
       
       names(df) <- c("GRI1_ID","X_COORD","Y_COORD","value","geometry","len")
       df_grilla <- rbind(df_grilla ,df)
@@ -98,25 +83,23 @@ busqueda_grilla <- function(hora_inicio,hora_fin=NULL,directorio_grillas,formato
     }
 
 
-       st_write(df_grilla,"./temp/temp_grilla.shp",delete_layer = TRUE,quiet = TRUE)
+       st_write(df_grilla,"./temp/temp_grid.shp",delete_layer = TRUE,quiet = TRUE)
 
-    grilla_trayecto<- st_read("./temp/temp_grilla.shp",quiet = TRUE)
+    trajectory_grid<- st_read("./temp/temp_grid.shp",quiet = TRUE)
   }
-  if(is.null(hora_fin)){
+  if(is.null(end_hour)){
 
-    return(df_grilla_inicio)
+    return(df_start_grid)
     }else{
-     # print("Funcion busqueda_grilla  OK")
-      return(grilla_trayecto)
+      return(trajectory_grid)
     }
 }
 
-#---- Ejemplos
-# Solo Hora de inicio
-prueba_busqueda_grilla<-busqueda_grilla(hora_inicio="2018-08-01 12:00:00 -03",hora_fin=NULL,directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
-# Hora de inicio y fin difentes (media) 
-# Esta tarda
-prueba_busqueda_grilla_2<-busqueda_grilla(hora_inicio="2018-08-01 00:50:00 -03",hora_fin="2018-08-05 02:50:00 -03",directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
+#---- Examples
+# Only with a start hour
+test_temporary_grid_search<-temporary_grid_search(start_hour="2018-08-01 12:00:00 -03",end_hour=NULL,dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
+#With a different start and end time
+test_temporary_grid_search_2<-temporary_grid_search(start_hour="2018-08-01 00:50:00 -03",end_hour="2018-08-05 02:50:00 -03",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
 
-# Hora de inicio y fin iguales
-prueba_busqueda_grilla_3<-busqueda_grilla(hora_inicio="2018-08-05 00:10:00 -03",hora_fin="2018-08-05 00:50:00 -03",directorio_grillas="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",formato_hora="%Y-%m-%d %H:%M:%S")
+#With a the same start and end time
+test_temporary_grid_search_3<-temporary_grid_search(start_hour="2018-08-05 00:10:00 -03",end_hour="2018-08-05 00:50:00 -03",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
