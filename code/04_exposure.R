@@ -17,25 +17,26 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     print(paste("Point",i,sep = " "))
     #if it is 1 it is the output value
       if(i==1){
+       
         # If i=1 consider the departure time entered in the function
     origin_coords <- paste((travel_list[i,2]),(travel_list[i,1]),sep = ",")
     destination_coords <- paste((travel_list[i+1,2]),(travel_list[i+1,1]),sep = ",")
-    selection_route <-  alternative_trajectories (origin=origin_coords,destination=destination_coords,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour = departure_time_home)
+    selection_route <-  alternative_trajectories (origin=origin_coords,dest=destination_coords,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour = departure_time_home)
         
-    }
+      }
+    
    else if (i == length(travel_list$long)){
      # If the coordinates correspond to the last point entered, destination returns to point 1 (home)
      
       origin_coords <- paste((travel_list[i,2]),(travel_list[i,1]),sep = ",")
       origin_coords_1 <- paste((travel_list[1,2]),(travel_list[1,1]),sep = ",")
-      selection_route <-  alternative_trajectories (origin=origin_coords,destination=origin_coords_1,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour =prox_hour_output)
+      selection_route <-  alternative_trajectories (origin=origin_coords,dest=origin_coords_1,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour =prox_hour_output)
       
     }else {
-
-
+     
       origin_coords <- paste((travel_list[i,2]),(travel_list[i,1]),sep = ",")
       destination_coords <- paste((travel_list[i+1,2]),(travel_list[i+1,1]),sep = ",")
-      selection_route <-  alternative_trajectories (origin=origin_coords,destination=destination_coords,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour = prox_hour_output)
+      selection_route <-  alternative_trajectories (origin=origin_coords,dest=destination_coords,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour = prox_hour_output)
       
     }
     # --------select the chosen alternative
@@ -49,7 +50,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     # ------- hours that we use to get the destination grid
    
   if(i==1){
-
+  
     # If it is the first trip, arrival time + activity time
     arrival_time <-  as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))
     prox_hour_output<-as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))+minutes(activity_minutes[i,])
@@ -59,14 +60,15 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
   }
 
     else if (i == nrow(activity_minutes)+1){
+      
 
       # If it is the last entered time ==> entered time - 23:59
     prox_hour_output <-  as.POSIXct(strptime((paste(substr(departure_time_home,1,10)," 23:59:59 -03",sep ="")), format = "%Y-%m-%d %H:%M:%S"))
     arrival_time  <-  as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))
     destination_time <- as.numeric(difftime(prox_hour_output,arrival_time ,unit ="mins"))
     }else{
-
-      # else ==> arrival time - hour + 1
+   
+    # else ==> arrival time - hour + 1
     prox_hour_output<-as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))+minutes(activity_minutes[i,])
     arrival_time <-  as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))
     destination_time <- as.numeric(difftime(prox_hour_output,arrival_time ,unit ="mins"))
@@ -74,6 +76,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     }
     
     # ------- data trajectories
+   
     trip_time <- selection_route$travelTimeInSeconds[1]
     trip_distance <- selection_route$lengthInMeters[1]
     trip_conc <- mean (selection_route$dailyPM, na.rm = T) 
@@ -89,7 +92,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     writeOGR(df_concentractions,"./temp","temp_point", driver="ESRI Shapefile")
     point <- st_read("./temp/temp_point.shp",quiet = TRUE)
     # Function that looks for the grids of the hours of interest
-    grid <- temporary_grid_search (hora_inicio=arrival_time,hora_fin=prox_hour_output ,directorio_grids=concentrations_grid,formato_hora="%Y-%m-%d %H:%M:%S")
+    grid <- temporary_grid_search (start_hour = arrival_time,end_hour = prox_hour_output ,dir_grids=concentrations_grid,time_format = "%Y-%m-%d %H:%M:%S")
     names(grid)<- c("GRI1_ID","X_COORD","Y_COORD" , "dailyPM" ,"len","geometry")
     intersection_point <- st_intersection(point,grid)
     conc_destination<- intersection_point[intersection_point$dailyPM == intersection_point$dailyPM[intersection_point$ID == max(intersection_point$ID)],]
@@ -100,11 +103,12 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
 
       # ------- Concentrations in O-D points in origin
       start_time <- paste (substr(arrival_time,1,10)," 00:00:01 -03",sep="")
-      grid_origin <- temporary_grid_search (hora_inicio=hora_inicial, hora_fin=departure_time_home,directorio_grids=concentrations_grid,formato_hora="%Y-%m-%d %H:%M:%S")
+      grid_origin <- temporary_grid_search (start_hour=start_time , end_hour=departure_time_home,dir_grids=concentrations_grid,time_format = "%Y-%m-%d %H:%M:%S")
+      
       names(grid_origin )<- c("GRI1_ID","X_COORD","Y_COORD" , "dailyPM" ,"len","geometry")
       conc_origin<- intersection_point[intersection_point$dailyPM == intersection_point$dailyPM[intersection_point$ID == min(intersection_point$ID)],]
       conc_origin <- conc_origin$dailyPM
-      time_origin <- as.numeric(difftime(departure_time_home,hora_inicial ,unit ="mins"))
+      time_origin <- as.numeric(difftime(departure_time_home,start_time  ,unit ="mins"))
       
     }else{
       conc_origin <- NA
@@ -125,7 +129,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
   }
   # ------- Final variables
    #Total exposure route
-
+  
   rbind_df_1$exp_tot_trajectory <- rbind_df_1$trip_conc *  rbind_df_1$trip_time
   rbind_df_1$exp_tot_destination <-   rbind_df_1$conc_destination *   rbind_df_1$destination_time
   rbind_df_1$exp_tot_origin <-   rbind_df_1$conc_origin *   rbind_df_1$time_origin
@@ -139,6 +143,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
   
   
   # -------Calculate exposures per hour mins VERSION 2
+
   exp_origin2 <- sum(rbind_df_1$exp_tot_origin, na.rm=T)
   exp_trajectory2 <- sum(rbind_df_1$exp_tot_trajectory, na.rm=T)
   exp_destination2 <- sum (rbind_df_1$exp_tot_destination, na.rm=T)
@@ -159,6 +164,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
                              #id_field = NULL,
                              sort_field = "ID")
   #  --- HTML plot features
+  
   tag.map.title <- tags$style(HTML("
   .leaflet-control.map-title { 
     transform: translate(-50%,20%);
@@ -176,7 +182,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
   title <- tags$div(tag.map.title, HTML(paste(sep = "<br/>", 
                                               paste0("<center><b>Total daily exposure estimate</b></center>"),
                                             
-                                              paste0("<b>Exposure: </b>",  exp_tot2 ," µg m-3/h"),
+                                              paste0("<b>Exposure: </b>",  exp_tot2 ," Î¼g m-3/h"),
                                               paste0("<b>Origin time: </b>",  time_origin_function,"hs"),
                                               paste0("<b>Activities time: </b>",  destination_time_function ," hs"),
                                               paste0("<b>Travel time: </b>",  trip_time_function ," hs"))))
@@ -215,7 +221,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     addTiles() %>%
     addControl(title, position = "topleft", className="map-title")%>%
     addLegend(data = grid,position = "bottomleft", pal = palfac, values = ~grid$categories, 
-              title = "US AQI Level - PM2.5 (µg m-3)")%>%
+              title = "US AQI Level - PM2.5 (Î¼g m-3)")%>%
 
     # Layers control
     addLayersControl(

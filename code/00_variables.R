@@ -12,29 +12,32 @@
 # 04_exposure.R
 #2. Locate yourself on the path where the CALPUFF grids are located
 #local path
-setwd("D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp")
+#setwd("D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/")
+setwd("D:/Josefina/paper_git/paper_exposure_model/grid_example")
+
 #3. Variables
 
 # ------------01. Origin-Destination points
-travel_list <- data.frame(long =c(-68.8361,-68.8212),
-                          lat = c(-32.9563,-32.9247))
-lista_viaje <- data.frame(long =c(-68.8361,-68.8212),
-                          lat = c(-32.9563,-32.9247))
-# ------------02. Key tom-tom
-key_1 <- "L4P6mCEdDjNejIszYS44dMMlW1n9Imzj" #
+travel_list <- data.frame(long =c(-68.8361,-68.822523),
+                          lat = c(-32.9563,-32.922720))
 
+# ------------02. Key tom-tom
+
+key_1 <- "YOdvX5qKwpk9YRl9v0JzqC5qSYNOwbDc"
 # ------------03. Transport mode 
 # Always consider the round trip
-mode = c("Car","Car")
+mode = c("car","car")
 
 #------------04. Path with all CALPUFF Grid
 # the grids must be by day-hour
-concentrations_grid<- "D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp"
+#concentrations_grid<- "D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/"
+concentrations_grid<- "D:/Josefina/paper_git/paper_exposure_model/grid_example"
+
 setwd(concentrations_grid)
 
 
 #------------05. Type of route selected
-selection <- c("faster_route","faster_route")
+selection <- c("Faster route","Faster route")
 selection <- c("shorter_route","shorter_route")
 selection <- c("more_polluted_routea","more_polluted_route")
 selection <- c("less_polluted_route","less_polluted_route")
@@ -42,8 +45,7 @@ selection <- c("more_exposure_route","more_exposure_route")
 selection <- c("less_exposure_route","less_exposure_route")
 
 ## ------------07. Departure time from home for the first time.
-departure_time_home <- "2018-08-01 12:01:00 -03"
-
+departure_time_home <- "2018-08-01 07:50:00 -03"
 ## ------------08. Duration of each activity.
 
 activity_minutes<-data.frame(activity_minutes=300)

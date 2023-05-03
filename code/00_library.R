@@ -3,6 +3,11 @@
 
 library(sp)
 library(raster)
+library(rgdal)
+library(sf)
+
+library(sp)
+library(raster)
 library(sf)
 library(maps)
 library(mapdata)

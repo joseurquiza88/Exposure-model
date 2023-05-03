@@ -11,7 +11,7 @@
 
 #The output is a data.frame ready to temporarily save to .shp
 
-temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grid,time_format){  
+temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grids,time_format){  
   # --- Function that looks for the grid (.shp) corresponding to the hour of interest entered
   hourly_grid <- function(hour, time_format = time_format,dir_grids=dir_grids){
     input_hour <- as.POSIXct(strptime(hour, format = time_format))
@@ -38,12 +38,14 @@ temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grid,time_format
   #  --- 
   if (is.null(end_hour)){
 
-    df_start_grid <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
-  }
+    df_start_grids <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
+    df_start_grid<-st_transform(df_start_grids,crs = 4326)
+    }
   #  --- Cuando es una sola grilla
   else if (only_start_hour == only_end_hour ){
 
     trajectory_grid <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
+    salida<-st_transform(trajectory_grid,crs = 4326)
   }else{
     # --- When there are several grids we do an average per pixel
     for(j in only_start_hour:only_end_hour){
@@ -82,24 +84,29 @@ temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grid,time_format
       names(df_grilla) <- c("GRI1_ID","X_COORD","Y_COORD","value","geometry","len")
     }
 
-
-       st_write(df_grilla,"./temp/temp_grid.shp",delete_layer = TRUE,quiet = TRUE)
-
+    
+    st_write(df_grilla,"./temp/temp_grid.shp",delete_layer = TRUE,quiet = TRUE)
+    
     trajectory_grid<- st_read("./temp/temp_grid.shp",quiet = TRUE)
+    salida<-st_transform(trajectory_grid,crs = 4326)
   }
   if(is.null(end_hour)){
 
     return(df_start_grid)
     }else{
-      return(trajectory_grid)
+      return(salida)
     }
 }
 
 #---- Examples
 # Only with a start hour
-test_temporary_grid_search<-temporary_grid_search(start_hour="2018-08-01 12:00:00 -03",end_hour=NULL,dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
+test_temporary_grid_search<-temporary_grid_search(start_hour="2019-08-01T07:50:00 -03",end_hour=NULL,dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/",time_format="%Y-%m-%dT%H:%M:%S")
+
+
 #With a different start and end time
 test_temporary_grid_search_2<-temporary_grid_search(start_hour="2018-08-01 00:50:00 -03",end_hour="2018-08-05 02:50:00 -03",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
+test_temporary_grid_search_2<-temporary_grid_search(start_hour="2019-08-01T07:50:00-03",end_hour="2019-08-01T08:31:09-03:00",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/",time_format="%Y-%m-%dT%H:%M:%S")
 
 #With a the same start and end time
 test_temporary_grid_search_3<-temporary_grid_search(start_hour="2018-08-05 00:10:00 -03",end_hour="2018-08-05 00:50:00 -03",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
+test_temporary_grid_search_3<-temporary_grid_search(start_hour="2019-08-01T00:10:00-03",end_hour="2019-08-01T00:31:09-03:00",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/",time_format="%Y-%m-%dT%H:%M:%S")
