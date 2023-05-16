@@ -41,7 +41,7 @@ temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grids,time_forma
     df_start_grids <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
     df_start_grid<-st_transform(df_start_grids,crs = 4326)
     }
-  #  --- Cuando es una sola grilla
+  #  --- When there is only one grid
   else if (only_start_hour == only_end_hour ){
 
     trajectory_grid <- st_read(hourly_grid(start_hour, time_format = time_format,dir_grids),quiet = TRUE)
@@ -99,14 +99,12 @@ temporary_grid_search <- function(start_hour, end_hour=NULL,dir_grids,time_forma
 }
 
 #---- Examples
-# Only with a start hour
-test_temporary_grid_search<-temporary_grid_search(start_hour="2019-08-01T07:50:00 -03",end_hour=NULL,dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/",time_format="%Y-%m-%dT%H:%M:%S")
+# With an only start hour
+test_temporary_grid_search<-temporary_grid_search(start_hour="2018-08-01T07:50:00 -03",end_hour=NULL,dir_grids="D:/Josefina/paper_git/paper_exposure_model/grid_example",time_format="%Y-%m-%dT%H:%M:%S")
 
 
 #With a different start and end time
-test_temporary_grid_search_2<-temporary_grid_search(start_hour="2018-08-01 00:50:00 -03",end_hour="2018-08-05 02:50:00 -03",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
-test_temporary_grid_search_2<-temporary_grid_search(start_hour="2019-08-01T07:50:00-03",end_hour="2019-08-01T08:31:09-03:00",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/",time_format="%Y-%m-%dT%H:%M:%S")
+test_temporary_grid_search_2<-temporary_grid_search(start_hour="2018-08-01 00:50:00 -03",end_hour="2018-08-01 02:50:00 -03",dir_grids="D:/Josefina/paper_git/paper_exposure_model/grid_example",time_format="%Y-%m-%d %H:%M:%S")
 
 #With a the same start and end time
-test_temporary_grid_search_3<-temporary_grid_search(start_hour="2018-08-05 00:10:00 -03",end_hour="2018-08-05 00:50:00 -03",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/PM25/temp/",time_format="%Y-%m-%d %H:%M:%S")
-test_temporary_grid_search_3<-temporary_grid_search(start_hour="2019-08-01T00:10:00-03",end_hour="2019-08-01T00:31:09-03:00",dir_grids="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/",time_format="%Y-%m-%dT%H:%M:%S")
+test_temporary_grid_search_3<-temporary_grid_search(start_hour="2018-08-01 00:10:00 -03",end_hour="2018-08-01 00:50:00 -03",dir_grids="D:/Josefina/paper_git/paper_exposure_model/grid_example",time_format="%Y-%m-%d %H:%M:%S")

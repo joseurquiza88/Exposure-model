@@ -12,25 +12,25 @@
 # 04_exposure.R
 #2. Locate yourself on the path where the CALPUFF grids are located
 #local path
-#setwd("D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/")
 setwd("D:/Josefina/paper_git/paper_exposure_model/grid_example")
 
 #3. Variables
 
 # ------------01. Origin-Destination points
-travel_list <- data.frame(long =c(-68.8361,-68.822523),
-                          lat = c(-32.9563,-32.922720))
 
+
+travel_list <- data.frame(long = c(-68.847007110213, -68.8188146532758),
+                          lat = c(-32.86620008642829, -32.884212044264906))
 # ------------02. Key tom-tom
 
-key_1 <- "YOdvX5qKwpk9YRl9v0JzqC5qSYNOwbDc"
+key <- "YOdvX5qKwpk9YRl9v0JzqC5qSYNOwbDc"###
 # ------------03. Transport mode 
 # Always consider the round trip
 mode = c("car","car")
 
 #------------04. Path with all CALPUFF Grid
 # the grids must be by day-hour
-#concentrations_grid<- "D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/"
+# local path
 concentrations_grid<- "D:/Josefina/paper_git/paper_exposure_model/grid_example"
 
 setwd(concentrations_grid)
@@ -56,5 +56,14 @@ example_df <- total_exposure (travel_list, mode, concentrations_grid,key,selecti
                             departure_time_home, activity_minutes)
 example_plot <- total_exposure (travel_list, mode, concentrations_grid,key,selection,output_exp="plot",
                               departure_time_home, activity_minutes)
+
+# ------------ Save examples
+# Path local
+setwd("D:/Josefina/paper_git/paper_exposure_model/examples")
+# output DF
+write.csv(example_df,"./func_expossure_DF.csv")
+# output plot
+htmlwidgets::saveWidget(example_plot , "./func_expossure_PLOT.html")
+
 
 

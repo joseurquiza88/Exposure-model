@@ -21,7 +21,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
         # If i=1 consider the departure time entered in the function
     origin_coords <- paste((travel_list[i,2]),(travel_list[i,1]),sep = ",")
     destination_coords <- paste((travel_list[i+1,2]),(travel_list[i+1,1]),sep = ",")
-    selection_route <-  alternative_trajectories (origin=origin_coords,dest=destination_coords,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour = departure_time_home)
+    selection_route <-  alternative_trajectories (origin=origin_coords,dest=destination_coords,mode=mode[i], concentrations_grid,key=key,output = "df",hour = departure_time_home)
         
       }
     
@@ -30,13 +30,13 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
      
       origin_coords <- paste((travel_list[i,2]),(travel_list[i,1]),sep = ",")
       origin_coords_1 <- paste((travel_list[1,2]),(travel_list[1,1]),sep = ",")
-      selection_route <-  alternative_trajectories (origin=origin_coords,dest=origin_coords_1,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour =prox_hour_output)
+      selection_route <-  alternative_trajectories (origin=origin_coords,dest=origin_coords_1,mode=mode[i], concentrations_grid,key=key,output = "df",hour =prox_hour_output)
       
     }else {
      
       origin_coords <- paste((travel_list[i,2]),(travel_list[i,1]),sep = ",")
       destination_coords <- paste((travel_list[i+1,2]),(travel_list[i+1,1]),sep = ",")
-      selection_route <-  alternative_trajectories (origin=origin_coords,dest=destination_coords,mode=mode[i], concentrations_grid,key=key_1,output = "df",hour = prox_hour_output)
+      selection_route <-  alternative_trajectories (origin=origin_coords,dest=destination_coords,mode=mode[i], concentrations_grid,key=key,output = "df",hour = prox_hour_output)
       
     }
     # --------select the chosen alternative
@@ -54,7 +54,6 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     # If it is the first trip, arrival time + activity time
     arrival_time <-  as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))
     prox_hour_output<-as.POSIXct(strptime(selection_route$arrivalTime[1], format = "%Y-%m-%dT%H:%M:%S"))+minutes(activity_minutes[i,])
-    #prox_hour_output  <-  as.POSIXct(strptime(hour[i+1], format = "%Y-%m-%d %H:%M:%S"))
     destination_time <- as.numeric(difftime(prox_hour_output,arrival_time ,unit ="mins"))
     
   }
@@ -75,28 +74,33 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
     
     }
     
-    # ------- data trajectories
+    # ------- Data trajectories
    
-    trip_time <- selection_route$travelTimeInSeconds[1]
+    trip_time <- selection_route$travelTimeInSeconds[1] # in minutes
     trip_distance <- selection_route$lengthInMeters[1]
     trip_conc <- mean (selection_route$dailyPM, na.rm = T) 
-    # ------- data origin
+    # ------- Data origin
     data_origin <-  selection_route[selection_route$ID == 1,]
     lat_origin <- data_origin$lat
     long_origin <- data_origin$long
     
-    # ------- destination concentrations
+    # ------- Destination concentrations
     df_concentractions <- rbind(data_origin,data_destination)
     coordinates(df_concentractions) <- ~long+lat
     proj4string(df_concentractions) <- CRS("+proj=longlat +datum=WGS84 +no_defs +ellps=WGS84 +towgs84=0,0,0")
     writeOGR(df_concentractions,"./temp","temp_point", driver="ESRI Shapefile")
     point <- st_read("./temp/temp_point.shp",quiet = TRUE)
+    
     # Function that looks for the grids of the hours of interest
     grid <- temporary_grid_search (start_hour = arrival_time,end_hour = prox_hour_output ,dir_grids=concentrations_grid,time_format = "%Y-%m-%d %H:%M:%S")
     names(grid)<- c("GRI1_ID","X_COORD","Y_COORD" , "dailyPM" ,"len","geometry")
     intersection_point <- st_intersection(point,grid)
-    conc_destination<- intersection_point[intersection_point$dailyPM == intersection_point$dailyPM[intersection_point$ID == max(intersection_point$ID)],]
-    conc_destination <- conc_destination$dailyPM
+    names(intersection_point)<-  c("altrntv" ,"ID" , "dprtrTm","arrvlTm","lngthIM" , "trffLIM" , "travlMd","trffDIS", "trvlTIS",
+                                   "lTITTIS",   "hsTTTIS",   "nTrTTIS" , "dailyPM", "exposur" ,"type","i" ,"GRI1_ID","X_COORD",
+                                    "Y_COORD","dailyPM.1", "len","geometry")
+    conc_destination <- which(intersection_point$ID == max(intersection_point$ID))
+    conc_destination<- intersection_point[conc_destination,] 
+    conc_destination <- conc_destination$dailyPM.1
 
         
     if (i==1){
@@ -104,17 +108,21 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
       # ------- Concentrations in O-D points in origin
       start_time <- paste (substr(arrival_time,1,10)," 00:00:01 -03",sep="")
       grid_origin <- temporary_grid_search (start_hour=start_time , end_hour=departure_time_home,dir_grids=concentrations_grid,time_format = "%Y-%m-%d %H:%M:%S")
+      intersection_point <- st_intersection(point,grid_origin)
+      names(intersection_point)<-  c("altrntv" ,"ID" , "dprtrTm","arrvlTm","lngthIM" , "trffLIM" , "travlMd","trffDIS", "trvlTIS",
+                                     "lTITTIS",   "hsTTTIS",   "nTrTTIS" , "dailyPM", "exposur" ,"type","i" ,"GRI1_ID","X_COORD",
+                                     "Y_COORD","dailyPM.1", "len","geometry")
+      conc_origin <- which(intersection_point$ID == min(intersection_point$ID))
+      conc_origin<- intersection_point[conc_origin,] 
+      conc_origin <- conc_origin$dailyPM.1
       
-      names(grid_origin )<- c("GRI1_ID","X_COORD","Y_COORD" , "dailyPM" ,"len","geometry")
-      conc_origin<- intersection_point[intersection_point$dailyPM == intersection_point$dailyPM[intersection_point$ID == min(intersection_point$ID)],]
-      conc_origin <- conc_origin$dailyPM
       time_origin <- as.numeric(difftime(departure_time_home,start_time  ,unit ="mins"))
       
     }else{
       conc_origin <- NA
       time_origin <- NA
       }
-###
+
     file.remove(file.path("./temp", dir(path="./temp" ,pattern="temp_point.*")))
     
     df_1 <- data.frame(lat_origin,long_origin, lat_destination, long_destination,
@@ -161,7 +169,6 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
                              long = "long", 
                              lat = "lat", 
                              id_field = "i",
-                             #id_field = NULL,
                              sort_field = "ID")
   #  --- HTML plot features
   
@@ -225,7 +232,7 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
 
     # Layers control
     addLayersControl(
-      overlayGroups = c("Concentrations",c(rbind_df_1$route)))#,"route menos contaminada", "route mas contaminada", "route mas corta","route mas rapida"))#,
+      overlayGroups = c("Concentrations",c(rbind_df_1$route)))
   
   if (output_exp == "df"){
     return(rbind_df_1)

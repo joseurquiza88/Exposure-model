@@ -1,4 +1,0 @@
-"","lat_origen","long_origen","lat_destino","long_destino","conc_origen","conc_trayecto","conc_destino","tiempo_trayecto","tiempo_destino","tiempo_origen","i","exp_tot_trayecto","exp_tot_destino","exp_tot_origen","exp_tot","exp_tot_sum","ruta","modo"
-"1",-33.05002,-68.77459,-32.88199,-68.78944,0,2.13,0.36467,31.85,343,464.983333333333,1,67.8405,125.08181,0,0.41,3.72,"Ruta 1","Auto"
-"2",-32.88199,-68.78944,-32.87565,-68.78944,NA,0.33,0.25562,3.02,44,NA,2,0.9966,11.24728,NA,0.41,3.72,"Ruta 2","Auto"
-"3",-32.87565,-68.78944,-33.05002,-68.77459,NA,0.3,0,59.37,494.633333333333,NA,3,17.811,0,NA,0.41,3.72,"Ruta 3","Colectivo"

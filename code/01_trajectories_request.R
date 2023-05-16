@@ -205,7 +205,7 @@ alternative_trajectories <- function(origin,dest,mode,concentrations_grid,
                                 lat = "lat", 
                                 id_field = NULL,
                                 sort_field = "ID")
-      more_polluted_route_line<- points_to_line(data = more_polluted_route, 
+     more_polluted_route_line<- points_to_line(data = more_polluted_route, 
                                              long = "long", 
                                              lat = "lat", 
                                              id_field = NULL,
@@ -265,28 +265,28 @@ alternative_trajectories <- function(origin,dest,mode,concentrations_grid,
                                 paste0("<center><b>More polluted route: </b></center>"),
                                 paste0("<b>Duration: </b>", more_polluted_route$travelTimeInSeconds," min"),
                                 paste0("<b>Distance: </b>", more_polluted_route$lengthInMeters," km"),
-                                paste0("<b>Concentrations PM: </b>", more_polluted_route$dailyPM," ?g m-3"),
-                                paste0("<b>PM Exposure: </b>", more_polluted_route$exposure," ?g m-3/h"))
+                                paste0("<b>Concentrations PM: </b>", more_polluted_route$dailyPM," µg m-3"),
+                                paste0("<b>PM Exposure: </b>", more_polluted_route$exposure," µg m-3/h"))
       content_less_cont <- paste(sep = "<br/>",
                                 paste0("<center><b>Less polluted route: </b></center>"),
                                 paste0("<b>Duration: </b>", less_polluted_route$travelTimeInSeconds," min"),
                                 paste0("<b>Distance: </b>", less_polluted_route$lengthInMeters," km"),
-                                paste0("<b>PM Concentrations: </b>", less_polluted_route$dailyPM," ?g m-3"),
-                                paste0("<b>PM exposure: </b>", less_polluted_route$exposure," ?g m-3/h"))
+                                paste0("<b>PM Concentrations: </b>", less_polluted_route$dailyPM," µg m-3"),
+                                paste0("<b>PM exposure: </b>", less_polluted_route$exposure," µg m-3/h"))
       
       content_short <- paste(sep = "<br/>",
                                 paste0("<center><b>Shorter route: </b></center>"),
                                 paste0("<b>Duration: </b>",shorter_route$travelTimeInSeconds," min"),
                                 paste0("<b>Distance: </b>", shorter_route$lengthInMeters," km"),
-                                paste0("<b>PM Concentrations: </b>", shorter_route$dailyPM," ?g m-3"),
-                             paste0("<b>PM exposure: </b>", shorter_route$exposure," ?g m-3/h"))
+                                paste0("<b>PM Concentrations: </b>", shorter_route$dailyPM," µg m-3"),
+                             paste0("<b>PM exposure: </b>", shorter_route$exposure," µg m-3/h"))
       
       content_fast <- paste(sep = "<br/>",
                                 paste0("<center><b>Faster route: </b></center>"),
                                 paste0("<b>Duration: </b>", faster_route$travelTimeInSeconds," min"),
                                 paste0("<b>Distance: </b>", faster_route$lengthInMeters," km"),
-                                paste0("<b>PM Concentrations: </b>", faster_route$dailyPM," ?g m-3"),
-                              paste0("<b>PM exposure: </b>", faster_route$exposure," ?g m-3/h"))
+                                paste0("<b>PM Concentrations: </b>", faster_route$dailyPM," µg m-3"),
+                              paste0("<b>PM exposure: </b>", faster_route$exposure," µg m-3/h"))
 
       content_less_exp<- paste(sep = "<br/>",
                               paste0("<center><b>Ruta Less exposure: </b></center>"),
@@ -419,6 +419,9 @@ alternative_trajectories <- function(origin,dest,mode,concentrations_grid,
     return(df2_output)
 }
 
+
+
+
 ########## ------ Examples
 
 origin <-"-32.79679,-68.816" # lat- long
@@ -428,11 +431,11 @@ destination <- "-32.84890,-68.38362" # lat- long
 key = #xxxxxx
 
 mode <- "car"
-concentrations_grid="D:/Josefina/Proyectos/CALPUFF/Resultados/V10/temp/"
-hour <- "2019-08-01 07:50:00 -03"
-
+concentrations_grid="D:/Josefina/paper_git/paper_exposure_model/grid_example"
+hour <- "2018-08-01 07:50:00 -03"
+setwd(concentrations_grid)
 #
-request_df2<-alternative_trajectories (origin,dest,mode,concentrations_grid,
+request_df<-alternative_trajectories (origin,dest,mode,concentrations_grid,
                                     key,output="df",hour)
   
 request_plot<-alternative_trajectories (origin,dest,mode,concentrations_grid,
@@ -441,15 +444,13 @@ request_polyline<-alternative_trajectories (origin,dest,mode,concentrations_grid
                                            key,output="polyline",hour)
 # ------------ Save examples
 # Path local
-setwd("D:/Josefina/Proyectos/salud/movilidad_7/ejemplos_varios")
+setwd("D:/Josefina/paper_git/paper_exposure_model/examples")
 # output DF
 write.csv(request_df,"./func_alternative_trajectories_DF.csv")
 # output plot
 htmlwidgets::saveWidget(request_plot, "func_alternative_trajectories_PLOT.html")
 
 # output polyline
-writeOGR(request_polyline,".","func_alternative_trajectories_POLYLINE_2", driver="ESRI Shapefile")
+writeOGR(request_polyline,".","func_alternative_trajectories_POLYLINE", driver="ESRI Shapefile")
 
-# output puntos request tom-tom
-prueba_trajectory_tomtom<-trajectories_tomtom(origin,dest,mode,hour_trajectory=hour)
-write.csv(prueba_trajectory_tomtom,"./prueba_trajectory_tomtom.csv")
+
