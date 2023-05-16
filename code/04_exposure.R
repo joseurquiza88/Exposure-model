@@ -189,14 +189,14 @@ total_exposure <- function (travel_list, mode, concentrations_grid,key,selection
   title <- tags$div(tag.map.title, HTML(paste(sep = "<br/>", 
                                               paste0("<center><b>Total daily exposure estimate</b></center>"),
                                             
-                                              paste0("<b>Exposure: </b>",  exp_tot2 ," μg m-3/h"),
+                                              paste0("<b>Exposure: </b>",  exp_tot2 ,"μg m-3/h"),
                                               paste0("<b>Origin time: </b>",  time_origin_function,"hs"),
                                               paste0("<b>Activities time: </b>",  destination_time_function ," hs"),
                                               paste0("<b>Travel time: </b>",  trip_time_function ," hs"))))
     #  --- Travel list ID
   num_rows<-  nrow(travel_list)
   id <- c(1:num_rows)
-  travel_list<- cbind(id , travel_list)
+  travel_list<- cbind(id , travel_list)#
   
   #  --- Grid categories
   grid$categories = case_when(grid$dailyPM<=12.1 ~ 'Good',
